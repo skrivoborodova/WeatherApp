@@ -23,11 +23,10 @@ final class NetworkCore {
     static let shared: NetworkCoreProtocol = NetworkCore()
     
     private let key = "aabf3d2a8a21d3ce96239161108b71db"
-    private let urlString = "https://api.openweathermap.org/data/2.5/weather?"
+    private let urlString = "https://api.openweathermap.org/data/2.5/"
     private let jsonDecoder = JSONDecoder()
 }
 
-// https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API key}
 
 extension NetworkCore: NetworkCoreProtocol {
     
