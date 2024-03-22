@@ -71,6 +71,7 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
             }
             
             if let result = res {
+//                print(result)
                 let date = Date(timeIntervalSince1970: TimeInterval(result.dt))
                 let model = WeatherCurrent(date: date,
                                            temp: Int(round(result.main.temp)),

@@ -28,11 +28,11 @@ class MainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = .red
-        
         presenter?.requestWeather()
         
         configureTableView()
+        
+        view.applyGradient(isVertical: true, colorArray: [UIColor.linearGradient1, UIColor.linearGradient2])
     }
     
     private func configureTableView() {
@@ -66,15 +66,20 @@ extension MainViewController: MainViewProtocol {
 // MARK: - UITableViewDelegate and UITableViewDataSource
 extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        presenter?.listWeatherForDays?.count ?? 0
+//        presenter?.listWeatherForDays?.count + 1 ?? 1
+        1
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! WeatherTableCell
-//        let description = presenter?.listWeatherForDays?[indexPath.row].description
-//        cell.setupCell(title: description)
-        let date = presenter?.listWeatherForDays?[indexPath.row].date.toString()
-        cell.setupCell(title: date)
+
+        cell.setupCell(city: presenter?.modelCurrentWeather?.city,
+                       date: presenter?.modelCurrentWeather?.date.toString(),
+                       temp: presenter?.modelCurrentWeather?.temp,
+                       maxTemp: presenter?.modelCurrentWeather?.tempMax,
+                       minTemp: presenter?.modelCurrentWeather?.tempMin,
+                       description: presenter?.modelCurrentWeather?.description)
+        
         return cell
     }
 }
