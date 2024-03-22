@@ -12,7 +12,7 @@ protocol Responsable: Decodable {
 
 enum NetworkError: Error {
     case invalidURL
-//    case responseDecodingError
+    case responseFailureStatusCode
 }
 
 protocol NetworkCoreProtocol {
@@ -47,6 +47,10 @@ extension NetworkCore: NetworkCoreProtocol {
                    (response as? HTTPURLResponse)?.statusCode == 200,
                    error == nil {
                     self.handleSuccsesDataResponse(data, completion: completion)
+                } else if let error = error {
+                    completion(.failure(error))
+                } else if (response as? HTTPURLResponse)?.statusCode != 200 {
+                    completion(.failure(NetworkError.responseFailureStatusCode))
                 }
             })
         dataTask.resume()
