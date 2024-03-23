@@ -9,7 +9,7 @@ import Foundation
 
 struct WeatherForDays {
     let date: Date
-    let temp, feelsLike, tempMin, tempMax: Double
+    let temp, feelsLike, tempMin, tempMax: Int
     let pressure, humidity: Int
     let description, icon: String
 }

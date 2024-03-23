@@ -82,7 +82,6 @@ class MainViewController: UIViewController {
     private lazy var weatherImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.layer.backgroundColor = UIColor.clear.cgColor
-        imageView.clipsToBounds = true
         imageView.contentMode = .center
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
@@ -96,7 +95,17 @@ class MainViewController: UIViewController {
         return view
     }()
     
+    private lazy var containerTableView: UIView = {
+        let view = UIView()
+        view.layer.cornerRadius = 14
+        view.backgroundColor = .clear
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
     
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
     
     //MARK: - Lifecycle
     override func viewDidLoad() {
@@ -116,13 +125,12 @@ class MainViewController: UIViewController {
             minTemp,
             descriptionTitle,
             weatherInfoView,
-            
-            
-            weatherTableView,
+            containerTableView,
         ])
+        containerTableView.addSubview(weatherTableView)
 
         NSLayoutConstraint.activate([
-            cityTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            cityTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
             cityTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             cityTitle.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
             
@@ -156,14 +164,15 @@ class MainViewController: UIViewController {
             weatherInfoView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             weatherInfoView.heightAnchor.constraint(equalToConstant: 120),
             
-            
-            
-            
-            
-//            weatherTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-//            weatherTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-//            weatherTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-//            weatherTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            containerTableView.topAnchor.constraint(equalTo: weatherInfoView.bottomAnchor, constant: 16),
+            containerTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+            containerTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            containerTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+
+            weatherTableView.topAnchor.constraint(equalTo: containerTableView.topAnchor),
+            weatherTableView.leadingAnchor.constraint(equalTo: containerTableView.leadingAnchor),
+            weatherTableView.trailingAnchor.constraint(equalTo: containerTableView.trailingAnchor),
+            weatherTableView.bottomAnchor.constraint(equalTo: containerTableView.bottomAnchor),
         ])
     }
 }
@@ -173,6 +182,7 @@ class MainViewController: UIViewController {
 extension MainViewController: MainViewProtocol {
     
     func showCurrentWeather(_ model: WeatherCurrent) {
+        self.weatherImageView.image = UIImage(named: model.icon)
         self.cityTitle.text = model.city
         self.dateTitle.text = model.date.toString()
         self.temp.text = "\(model.temp)°"
@@ -185,6 +195,7 @@ extension MainViewController: MainViewProtocol {
     
     
     func showWeather() {
+        containerTableView.backgroundColor = UIColor.white.withAlphaComponent(0.15)
         weatherTableView.reloadData()
     }
     
@@ -198,20 +209,17 @@ extension MainViewController: MainViewProtocol {
 // MARK: - UITableViewDelegate and UITableViewDataSource
 extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        presenter?.listWeatherForDays?.count + 1 ?? 1
-        1
+        presenter?.listWeatherForDays?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! WeatherTableCell
-
-//        cell.setupCell(city: presenter?.modelCurrentWeather?.city,
-//                       date: presenter?.modelCurrentWeather?.date.toString(),
-//                       temp: presenter?.modelCurrentWeather?.temp,
-//                       maxTemp: presenter?.modelCurrentWeather?.tempMax,
-//                       minTemp: presenter?.modelCurrentWeather?.tempMin,
-//                       description: presenter?.modelCurrentWeather?.description)
-        
+        cell.setupCell(date: presenter?.listWeatherForDays?[indexPath.row].date.toString(),
+                       tempMin: presenter?.listWeatherForDays?[indexPath.row].tempMin,
+                       tempMax: presenter?.listWeatherForDays?[indexPath.row].tempMax,
+                       icon: presenter?.listWeatherForDays?[indexPath.row].icon)
         return cell
     }
+    
+    
 }

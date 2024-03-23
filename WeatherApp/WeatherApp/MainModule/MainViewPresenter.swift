@@ -23,7 +23,6 @@ protocol MainViewPresenterProtocol: AnyObject {
     init(view: MainViewProtocol, weatherService: WeatherServiceProtocol)
     func requestWeather()
     
-//    var modelCurrentWeather: WeatherCurrent? { get }
     var listWeatherForDays: [WeatherForDays]? { get }
 }
 
@@ -34,7 +33,6 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
     private let locationManager: CLLocationManager
     private var currentCoordinates: CLLocation?
     
-    var modelCurrentWeather: WeatherCurrent?
     var listWeatherForDays: [WeatherForDays]?
     
     init(view: MainViewProtocol, weatherService: WeatherServiceProtocol) {
@@ -83,8 +81,7 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
                                            humidity: result.main.humidity,
                                            city: result.name,
                                            description: result.weather.first?.description ?? "",
-                                           icon: result.weather.first?.icon ?? "")
-//                self?.modelCurrentWeather = model
+                                           icon: self?.chooseIconForWeather(result.weather.first) ?? "")
                 self?.mainViewShowCurrentWeather(model)
             }
         }
@@ -107,22 +104,58 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
                     if Calendar.current.compare(date1, to: date2, toGranularity: .day) == .orderedAscending {
                         k = i + 6
                     } else if k == i {
-//                        print ("||| \(date1) |||")
+//                        print ("| \(date1) |")
                         let model = WeatherForDays(date: date1,
-                                                   temp: result.list[k].main.temp,
-                                                   feelsLike: result.list[k].main.feelsLike,
-                                                   tempMin: result.list[k].main.tempMin,
-                                                   tempMax: result.list[k].main.tempMax,
+                                                   temp: Int(round(result.list[k].main.temp)),
+                                                   feelsLike: Int(round(result.list[k].main.feelsLike)),
+                                                   tempMin: Int(round(result.list[k].main.tempMin)),
+                                                   tempMax: Int(round(result.list[k].main.tempMax)),
                                                    pressure: result.list[k].main.pressure,
                                                    humidity: result.list[k].main.humidity,
                                                    description: result.list[k].weather.first?.description ?? "",
-                                                   icon: result.list[k].weather.first?.icon ?? "")
+                                                   icon: "\(self?.chooseIconForWeather(result.list[k].weather.first) ?? "")Small")
                         self?.listWeatherForDays?.append(model)
                         self?.mainViewShowResults()
                     }
                 }
             }
         }
+    }
+    
+    private func chooseIconForWeather(_ weather: Weather?) -> String {
+        //https://openweathermap.org/weather-conditions
+        var icon = "lightCloudy"
+        if let weather = weather {
+            
+//            print ("weather id: \(weather.id)")
+            
+            if weather.id >= 200 && weather.id <= 232 {
+                //иконка: гроза
+                icon = "lightning"
+            } else if weather.id >= 300 && weather.id <= 321 {
+                //иконка: дождь
+                icon = "rainy"
+            } else if weather.id >= 500 && weather.id <= 531 {
+                //иконка: дождь с солнцем
+                icon = "lighRain"
+            } else if weather.id >= 600 && weather.id <= 622 {
+                //иконка: снег
+                icon = "snow"
+            } else if weather.id >= 700 && weather.id <= 781 {
+                //иконка: туман
+                icon = "fog2"
+            } else if weather.id == 800 {
+                // иконка: ясное небо
+                icon = "sunny"
+            } else if weather.id == 801 {
+                // иконка: облако с солнцем
+                icon = "lightCloudy"
+            } else if weather.id >= 802 && weather.id <= 804 {
+                // иконка: облако
+                icon = "cloudy"
+            }
+        }
+        return icon
     }
     
     private func mainViewShowError(_ error: Error) {
