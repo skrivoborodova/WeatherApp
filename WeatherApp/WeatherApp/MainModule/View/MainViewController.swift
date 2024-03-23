@@ -104,6 +104,23 @@ class MainViewController: UIViewController {
         return view
     }()
     
+    private lazy var searchField: UITextField = {
+        let textField =  UITextField()
+        textField.placeholder = "Введите название города"
+        textField.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+        textField.borderStyle = .roundedRect
+        textField.layer.cornerRadius = 10.0
+        textField.layer.borderWidth = 0
+        textField.layer.masksToBounds = true
+        textField.keyboardType = .default
+        textField.returnKeyType = .done
+        textField.clearButtonMode = .whileEditing
+        textField.contentVerticalAlignment = .center
+        textField.delegate = self
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        return textField
+    }()
+    
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
     }
@@ -127,11 +144,17 @@ class MainViewController: UIViewController {
             descriptionTitle,
             weatherInfoView,
             containerTableView,
+            searchField
         ])
         containerTableView.addSubview(weatherTableView)
 
         NSLayoutConstraint.activate([
-            cityTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            
+            searchField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            searchField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            searchField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            
+            cityTitle.topAnchor.constraint(equalTo: searchField.bottomAnchor, constant: 24),
             cityTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             cityTitle.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
             
@@ -228,5 +251,41 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 32
     }
+}
+
+//MARK: - UITextFieldDelegate
+extension MainViewController: UITextFieldDelegate {
     
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        guard let text = textField.text,
+              !text.isEmpty else {
+            return
+        }
+        presenter?.seacrhWeather(text)
+    }
+    
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        return true
+    }
+    
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        return true
+    }
+    
+    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
+        return true
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        return true
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder();
+        return true
+    }
 }

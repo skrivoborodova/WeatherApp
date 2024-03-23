@@ -7,10 +7,12 @@
 
 import Foundation
 import CoreLocation
+import MapKit
 
 enum LocationServiceError: Error {
     case authorizationDenied
     case currentCoordinatesMissed
+    case cantFindCityCoordinates
 }
 
 protocol MainViewProtocol: AnyObject {
@@ -22,6 +24,7 @@ protocol MainViewProtocol: AnyObject {
 protocol MainViewPresenterProtocol: AnyObject {
     init(view: MainViewProtocol, weatherService: WeatherServiceProtocol)
     func requestWeather()
+    func seacrhWeather(_ text: String)
     
     var listWeatherForDays: [WeatherForDays]? { get }
 }
@@ -43,6 +46,25 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
         self.listWeatherForDays = []
     }
     
+    func seacrhWeather(_ text: String) {
+        let searchRequest = MKLocalSearch.Request()
+        searchRequest.naturalLanguageQuery = text
+        let search = MKLocalSearch(request: searchRequest)
+        
+        search.start { [weak self] response, error in
+            guard let response = response else {
+                self?.mainViewShowError(error ?? LocationServiceError.cantFindCityCoordinates)
+                print("Error: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            
+            for item in response.mapItems {
+                print("coordinats: \(item.placemark.coordinate)")
+                self?.requestWeather(latitude: item.placemark.coordinate.latitude, longitude: item.placemark.coordinate.longitude)
+            }
+        }
+    }
+    
     func requestWeather() {
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()
@@ -60,9 +82,12 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
         }
         let latitude = currentCoordinates.coordinate.latitude
         let longitude = currentCoordinates.coordinate.longitude
+//        print ("\(latitude) | \(longitude)")
         
-        print ("\(latitude) | \(longitude)")
-        
+        requestWeather(latitude: latitude, longitude: longitude)
+    }
+    
+    private func requestWeather(latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
         weatherService.requestWeather(latitude: latitude, longitude: longitude) { [weak self] res, err in
             if let error = err {
                 self?.mainViewShowError(error)
@@ -126,9 +151,6 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
         //https://openweathermap.org/weather-conditions
         var icon = "lightCloudy"
         if let weather = weather {
-            
-//            print ("weather id: \(weather.id)")
-            
             if weather.id >= 200 && weather.id <= 232 {
                 //иконка: гроза
                 icon = "lightning"
