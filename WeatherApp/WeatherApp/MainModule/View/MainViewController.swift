@@ -25,25 +25,145 @@ class MainViewController: UIViewController {
         return tableView
     }()
     
+    private lazy var cityTitle: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 34, weight: .regular)
+        label.textColor = .white
+        label.numberOfLines = 0
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
+    private lazy var dateTitle: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 17, weight: .regular)
+        label.textColor = UIColor.white.withAlphaComponent(0.8)
+        label.numberOfLines = 0
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var temp: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 80, weight: .regular)
+        label.textColor = .white
+        label.numberOfLines = 0
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var maxTemp: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 17, weight: .regular)
+        label.textColor = .white
+        label.numberOfLines = 0
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var minTemp: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 17, weight: .regular)
+        label.textColor = .white
+        label.numberOfLines = 0
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var descriptionTitle: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 17, weight: .regular)
+        label.textColor = UIColor.white.withAlphaComponent(0.8)
+        label.numberOfLines = 0
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var weatherImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.layer.backgroundColor = UIColor.clear.cgColor
+        imageView.clipsToBounds = true
+        imageView.contentMode = .center
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    private lazy var weatherInfoView: WeatherInfoView = {
+        let view = WeatherInfoView()
+        view.layer.cornerRadius = 14
+        view.backgroundColor = .clear
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    
+    
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         presenter?.requestWeather()
-        
-        configureTableView()
-        
-        view.applyGradient(isVertical: true, colorArray: [UIColor.linearGradient1, UIColor.linearGradient2])
+        configureView()
     }
     
-    private func configureTableView() {
-        view.backgroundColor = .secondarySystemBackground
-        view.addSubview(weatherTableView)
+    private func configureView() {
+        view.applyGradient(isVertical: true, colorArray: [UIColor.linearGradient1, UIColor.linearGradient2])
+        view.addSubviews([
+            cityTitle,
+            dateTitle,
+            weatherImageView,
+            temp,
+            maxTemp,
+            minTemp,
+            descriptionTitle,
+            weatherInfoView,
+            
+            
+            weatherTableView,
+        ])
 
         NSLayoutConstraint.activate([
-            weatherTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            weatherTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            weatherTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            weatherTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            cityTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            cityTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            cityTitle.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            
+            dateTitle.topAnchor.constraint(equalTo: cityTitle.bottomAnchor),
+            dateTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            dateTitle.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            
+            weatherImageView.topAnchor.constraint(equalTo: dateTitle.bottomAnchor, constant: 16),
+            weatherImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            weatherImageView.widthAnchor.constraint(lessThanOrEqualToConstant: 150),
+            weatherImageView.heightAnchor.constraint(lessThanOrEqualToConstant: 150),
+            
+            temp.topAnchor.constraint(equalTo: weatherImageView.topAnchor),
+            temp.leadingAnchor.constraint(equalTo: weatherImageView.trailingAnchor, constant: 16),
+            temp.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            
+            maxTemp.topAnchor.constraint(equalTo: temp.bottomAnchor),
+            maxTemp.leadingAnchor.constraint(equalTo: weatherImageView.trailingAnchor, constant: 16),
+            maxTemp.trailingAnchor.constraint(equalTo: minTemp.leadingAnchor, constant: -6),
+            
+            minTemp.topAnchor.constraint(equalTo: maxTemp.topAnchor),
+            minTemp.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            minTemp.leadingAnchor.constraint(equalTo: maxTemp.trailingAnchor, constant: 6),
+            
+            descriptionTitle.topAnchor.constraint(equalTo: maxTemp.bottomAnchor),
+            descriptionTitle.leadingAnchor.constraint(equalTo: weatherImageView.trailingAnchor, constant: 16),
+            descriptionTitle.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            
+            weatherInfoView.topAnchor.constraint(equalTo: weatherImageView.bottomAnchor, constant: 16),
+            weatherInfoView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            weatherInfoView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            weatherInfoView.heightAnchor.constraint(equalToConstant: 120),
+            
+            
+            
+            
+            
+//            weatherTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+//            weatherTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+//            weatherTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+//            weatherTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
     }
 }
@@ -51,6 +171,18 @@ class MainViewController: UIViewController {
 
 // MARK: - MainViewProtocol
 extension MainViewController: MainViewProtocol {
+    
+    func showCurrentWeather(_ model: WeatherCurrent) {
+        self.cityTitle.text = model.city
+        self.dateTitle.text = model.date.toString()
+        self.temp.text = "\(model.temp)°"
+        self.maxTemp.text = "Макс.: \(model.tempMax)°"
+        self.minTemp.text = "Мин.: \(model.tempMin)°"
+        self.descriptionTitle.text = model.description
+        self.weatherInfoView.backgroundColor = UIColor.white.withAlphaComponent(0.15)
+        self.weatherInfoView.setupView(feelsLike: model.feelsLike, windSpeed: model.windSpeed, humidity: model.humidity, pressure: model.pressure)
+    }
+    
     
     func showWeather() {
         weatherTableView.reloadData()
@@ -73,12 +205,12 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! WeatherTableCell
 
-        cell.setupCell(city: presenter?.modelCurrentWeather?.city,
-                       date: presenter?.modelCurrentWeather?.date.toString(),
-                       temp: presenter?.modelCurrentWeather?.temp,
-                       maxTemp: presenter?.modelCurrentWeather?.tempMax,
-                       minTemp: presenter?.modelCurrentWeather?.tempMin,
-                       description: presenter?.modelCurrentWeather?.description)
+//        cell.setupCell(city: presenter?.modelCurrentWeather?.city,
+//                       date: presenter?.modelCurrentWeather?.date.toString(),
+//                       temp: presenter?.modelCurrentWeather?.temp,
+//                       maxTemp: presenter?.modelCurrentWeather?.tempMax,
+//                       minTemp: presenter?.modelCurrentWeather?.tempMin,
+//                       description: presenter?.modelCurrentWeather?.description)
         
         return cell
     }

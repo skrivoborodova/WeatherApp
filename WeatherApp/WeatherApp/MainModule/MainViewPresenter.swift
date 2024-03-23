@@ -14,6 +14,7 @@ enum LocationServiceError: Error {
 }
 
 protocol MainViewProtocol: AnyObject {
+    func showCurrentWeather(_ model: WeatherCurrent)
     func showWeather()
     func showError(_ error: Error)
 }
@@ -22,7 +23,7 @@ protocol MainViewPresenterProtocol: AnyObject {
     init(view: MainViewProtocol, weatherService: WeatherServiceProtocol)
     func requestWeather()
     
-    var modelCurrentWeather: WeatherCurrent? { get }
+//    var modelCurrentWeather: WeatherCurrent? { get }
     var listWeatherForDays: [WeatherForDays]? { get }
 }
 
@@ -47,7 +48,7 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
     func requestWeather() {
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()
-        if locationManager.authorizationStatus == .denied {
+        if locationManager.authorizationStatus == .denied || locationManager.authorizationStatus == .restricted {
             mainViewShowError(LocationServiceError.authorizationDenied)
         } else {
             locationManager.startUpdatingLocation()
@@ -83,8 +84,8 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
                                            city: result.name,
                                            description: result.weather.first?.description ?? "",
                                            icon: result.weather.first?.icon ?? "")
-                self?.modelCurrentWeather = model
-                self?.mainViewShowResults()
+//                self?.modelCurrentWeather = model
+                self?.mainViewShowCurrentWeather(model)
             }
         }
         
@@ -135,6 +136,12 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
             self?.mainView.showWeather()
         }
     }
+    
+    private func mainViewShowCurrentWeather(_ model: WeatherCurrent) {
+        DispatchQueue.main.async { [weak self] in
+            self?.mainView.showCurrentWeather(model)
+        }
+    }
 }
 
 //MARK: - CLLocationManagerDelegate
@@ -145,6 +152,12 @@ extension MainViewPresenter: CLLocationManagerDelegate {
             currentCoordinates = locations.first
             locationManager.stopUpdatingLocation()
             requestWeatherForLocation()
+        }
+    }
+    
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        if manager.authorizationStatus == .denied || manager.authorizationStatus == .restricted {
+            mainViewShowError(LocationServiceError.authorizationDenied)
         }
     }
 }
