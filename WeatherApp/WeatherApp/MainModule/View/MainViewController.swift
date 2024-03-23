@@ -139,7 +139,7 @@ class MainViewController: UIViewController {
             dateTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             dateTitle.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
             
-            weatherImageView.topAnchor.constraint(equalTo: dateTitle.bottomAnchor, constant: 16),
+            weatherImageView.topAnchor.constraint(equalTo: dateTitle.bottomAnchor, constant: 32),
             weatherImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             weatherImageView.widthAnchor.constraint(lessThanOrEqualToConstant: 150),
             weatherImageView.heightAnchor.constraint(lessThanOrEqualToConstant: 150),
