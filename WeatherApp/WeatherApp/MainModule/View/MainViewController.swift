@@ -14,13 +14,14 @@ class MainViewController: UIViewController {
     private let cellId = "cellId"
     
     private lazy var weatherTableView: UITableView = {
-        let tableView = UITableView()
+        let tableView = UITableView(frame: .zero, style: .grouped)
         tableView.dataSource = self
         tableView.delegate = self
         tableView.rowHeight = UITableView.automaticDimension
         tableView.register(WeatherTableCell.self, forCellReuseIdentifier: cellId)
         tableView.backgroundColor = .clear
-        tableView.separatorStyle = .none
+        tableView.separatorStyle = .singleLine
+        tableView.separatorColor = .white.withAlphaComponent(0.2)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
@@ -98,7 +99,7 @@ class MainViewController: UIViewController {
     private lazy var containerTableView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 14
-        view.backgroundColor = .clear
+        view.backgroundColor = UIColor.white.withAlphaComponent(0.15)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -169,7 +170,7 @@ class MainViewController: UIViewController {
             containerTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             containerTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
 
-            weatherTableView.topAnchor.constraint(equalTo: containerTableView.topAnchor),
+            weatherTableView.topAnchor.constraint(equalTo: containerTableView.topAnchor, constant: 16),
             weatherTableView.leadingAnchor.constraint(equalTo: containerTableView.leadingAnchor),
             weatherTableView.trailingAnchor.constraint(equalTo: containerTableView.trailingAnchor),
             weatherTableView.bottomAnchor.constraint(equalTo: containerTableView.bottomAnchor),
@@ -193,9 +194,7 @@ extension MainViewController: MainViewProtocol {
         self.weatherInfoView.setupView(feelsLike: model.feelsLike, windSpeed: model.windSpeed, humidity: model.humidity, pressure: model.pressure)
     }
     
-    
     func showWeather() {
-        containerTableView.backgroundColor = UIColor.white.withAlphaComponent(0.15)
         weatherTableView.reloadData()
     }
     
@@ -221,5 +220,13 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
     
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = HeaderView()
+        return headerView
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 32
+    }
     
 }

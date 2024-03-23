@@ -15,5 +15,8 @@ extension UIColor {
     
     static let linearGradient1: UIColor = UIColor(r: 75, g: 147, b: 225)
     static let linearGradient2: UIColor = UIColor(r: 146, g: 185, b: 228)
+    
+    static let lightBlue: UIColor = UIColor(r: 206, g: 234, b: 255)
+
 }
 

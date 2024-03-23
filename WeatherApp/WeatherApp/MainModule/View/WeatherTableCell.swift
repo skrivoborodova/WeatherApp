@@ -75,9 +75,8 @@ extension WeatherTableCell {
             
             weatherImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
             weatherImageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            weatherImageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            weatherImageView.widthAnchor.constraint(lessThanOrEqualToConstant: 24),
-            weatherImageView.heightAnchor.constraint(lessThanOrEqualToConstant: 24),
+            weatherImageView.widthAnchor.constraint(equalToConstant: 24),
+            weatherImageView.heightAnchor.constraint(equalToConstant: 24),
 
             temp.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
             temp.leadingAnchor.constraint(equalTo: contentView.centerXAnchor, constant: 24),
