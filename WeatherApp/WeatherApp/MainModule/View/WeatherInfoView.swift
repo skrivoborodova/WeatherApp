@@ -172,7 +172,13 @@ final class WeatherInfoView: UIView {
         configureView()
     }
     
-    func setupView(feelsLike: Int, windSpeed: Int, humidity: Int, pressure: Int) {
+    func setupView(feelsLike: Int?, windSpeed: Int?, humidity: Int?, pressure: Int?) {
+        
+        guard let feelsLike = feelsLike,
+              let windSpeed = windSpeed,
+              let humidity = humidity,
+              let pressure = pressure
+        else { return }
         
         line.backgroundColor = UIColor.white.withAlphaComponent(0.2)
         

@@ -19,6 +19,7 @@ protocol MainViewProtocol: AnyObject {
     func showCurrentWeather(_ model: WeatherCurrent)
     func showWeather()
     func showError(_ error: Error)
+    func clearShowingData()
 }
 
 protocol MainViewPresenterProtocol: AnyObject {
@@ -47,25 +48,35 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
     }
     
     func seacrhWeather(_ text: String) {
+        listWeatherForDays?.removeAll()
+        mainViewClearShowingData()
         let searchRequest = MKLocalSearch.Request()
         searchRequest.naturalLanguageQuery = text
         let search = MKLocalSearch(request: searchRequest)
         
-        search.start { [weak self] response, error in
-            guard let response = response else {
-                self?.mainViewShowError(error ?? LocationServiceError.cantFindCityCoordinates)
-                print("Error: \(error?.localizedDescription ?? "Unknown error")")
-                return
-            }
-            
-            for item in response.mapItems {
-                print("coordinats: \(item.placemark.coordinate)")
-                self?.requestWeather(latitude: item.placemark.coordinate.latitude, longitude: item.placemark.coordinate.longitude)
+        DispatchQueue.global().async {
+            search.start { [weak self] response, error in
+                guard let response = response else {
+                    self?.mainViewShowError(error ?? LocationServiceError.cantFindCityCoordinates)
+                    print("Error: \(error?.localizedDescription ?? "Unknown error")")
+                    return
+                }
+                
+                for item in response.mapItems {
+                    print("coordinats: \(item.placemark.coordinate)")
+                    self?.requestWeather(latitude: item.placemark.coordinate.latitude, longitude: item.placemark.coordinate.longitude)
+                }
             }
         }
     }
     
     func requestWeather() {
+        if currentCoordinates != nil {
+            listWeatherForDays?.removeAll()
+            mainViewClearShowingData()
+            requestWeatherForLocation()
+            return
+        }
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()
         if locationManager.authorizationStatus == .denied || locationManager.authorizationStatus == .restricted {
@@ -195,6 +206,12 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
     private func mainViewShowCurrentWeather(_ model: WeatherCurrent) {
         DispatchQueue.main.async { [weak self] in
             self?.mainView.showCurrentWeather(model)
+        }
+    }
+    
+    private func mainViewClearShowingData() {
+        DispatchQueue.main.async { [weak self] in
+            self?.mainView.clearShowingData()
         }
     }
 }

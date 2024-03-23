@@ -121,6 +121,14 @@ class MainViewController: UIViewController {
         return textField
     }()
     
+    private lazy var locationButton: UIButton = {
+        let button = UIButton()
+        button.setImage(UIImage(named: "location"), for: .normal)
+        button.addTarget(self, action: #selector(locationButtonTapped), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
     }
@@ -144,7 +152,8 @@ class MainViewController: UIViewController {
             descriptionTitle,
             weatherInfoView,
             containerTableView,
-            searchField
+            searchField,
+            locationButton
         ])
         containerTableView.addSubview(weatherTableView)
 
@@ -152,7 +161,12 @@ class MainViewController: UIViewController {
             
             searchField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
             searchField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-            searchField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            searchField.trailingAnchor.constraint(equalTo: locationButton.leadingAnchor, constant: -12),
+            
+            locationButton.centerYAnchor.constraint(equalTo: searchField.centerYAnchor),
+            locationButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            locationButton.heightAnchor.constraint(equalToConstant: 24),
+            locationButton.widthAnchor.constraint(equalToConstant: 24),
             
             cityTitle.topAnchor.constraint(equalTo: searchField.bottomAnchor, constant: 24),
             cityTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
@@ -199,11 +213,28 @@ class MainViewController: UIViewController {
             weatherTableView.bottomAnchor.constraint(equalTo: containerTableView.bottomAnchor),
         ])
     }
+    
+    @objc private func locationButtonTapped() {
+        presenter?.requestWeather()
+    }
 }
 
 
 // MARK: - MainViewProtocol
 extension MainViewController: MainViewProtocol {
+    func clearShowingData() {
+        weatherTableView.reloadData()
+        self.weatherImageView.image = UIImage(named: "")
+        self.cityTitle.text = ""
+        self.dateTitle.text = ""
+        self.temp.text = ""
+        self.maxTemp.text = ""
+        self.minTemp.text = ""
+        self.descriptionTitle.text = ""
+        self.weatherInfoView.backgroundColor = .clear
+        self.weatherInfoView.setupView(feelsLike: nil, windSpeed: nil, humidity: nil, pressure: nil)
+    }
+    
     
     func showCurrentWeather(_ model: WeatherCurrent) {
         self.weatherImageView.image = UIImage(named: model.icon)
@@ -249,7 +280,7 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 32
+        32
     }
 }
 
