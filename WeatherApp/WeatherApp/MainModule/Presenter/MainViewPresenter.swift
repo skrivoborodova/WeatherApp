@@ -85,16 +85,16 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
             }
             
             if let result = res {
-                let date = Date(timeIntervalSince1970: TimeInterval(result.dt))
+                let date = Date(timeIntervalSince1970: TimeInterval(result.dt ?? 0))
                 let model = WeatherCurrent(date: date,
-                                           temp: Int(round(result.main.temp)),
-                                           feelsLike: Int(round(result.main.feelsLike)),
-                                           tempMin: Int(round(result.main.tempMin)),
-                                           tempMax: Int(round(result.main.tempMax)),
-                                           windSpeed: Int(round(result.wind.speed)),
-                                           pressure: result.main.pressure,
-                                           humidity: result.main.humidity,
-                                           city: result.name,
+                                           temp: Int(round(result.main.temp ?? 0)),
+                                           feelsLike: Int(round(result.main.feelsLike ?? 0)),
+                                           tempMin: Int(round(result.main.tempMin ?? 0)),
+                                           tempMax: Int(round(result.main.tempMax ?? 0)),
+                                           windSpeed: Int(round(result.wind.speed ?? 0)),
+                                           pressure: result.main.pressure ?? 0,
+                                           humidity: result.main.humidity ?? 0,
+                                           city: result.name ?? "",
                                            description: result.weather.first?.description ?? "",
                                            icon: self?.chooseIconForWeather(result.weather.first) ?? "")
                 self?.mainViewShowCurrentWeather(model)
@@ -113,20 +113,20 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
                     if k > result.list.count - 1 {
                         k = i
                     }
-                    let date1 = Date(timeIntervalSince1970: TimeInterval(result.list[k].dt))
-                    let date2 = Date(timeIntervalSince1970: TimeInterval(result.list[i].dt))
+                    let date1 = Date(timeIntervalSince1970: TimeInterval(result.list[k].dt ?? 0))
+                    let date2 = Date(timeIntervalSince1970: TimeInterval(result.list[i].dt ?? 0))
                     
                     if Calendar.current.compare(date1, to: date2, toGranularity: .day) == .orderedAscending {
                         k = i + 6
                     } else if k == i {
 //                        print ("| \(date1) |")
                         let model = WeatherForDays(date: date1,
-                                                   temp: Int(round(result.list[k].main.temp)),
-                                                   feelsLike: Int(round(result.list[k].main.feelsLike)),
-                                                   tempMin: Int(round(result.list[k].main.tempMin)),
-                                                   tempMax: Int(round(result.list[k].main.tempMax)),
-                                                   pressure: result.list[k].main.pressure,
-                                                   humidity: result.list[k].main.humidity,
+                                                   temp: Int(round(result.list[k].main.temp ?? 0)),
+                                                   feelsLike: Int(round(result.list[k].main.feelsLike ?? 0)),
+                                                   tempMin: Int(round(result.list[k].main.tempMin ?? 0)),
+                                                   tempMax: Int(round(result.list[k].main.tempMax ?? 0)),
+                                                   pressure: result.list[k].main.pressure ?? 0,
+                                                   humidity: result.list[k].main.humidity ?? 0,
                                                    description: result.list[k].weather.first?.description ?? "",
                                                    icon: "\(self?.chooseIconForWeather(result.list[k].weather.first) ?? "")Small")
                         self?.listWeatherForDays?.append(model)
@@ -141,30 +141,32 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
         //https://openweathermap.org/weather-conditions
         var icon = "lightCloudy"
         if let weather = weather {
-            if weather.id >= 200 && weather.id <= 232 {
-                //иконка: гроза
-                icon = "lightning"
-            } else if weather.id >= 300 && weather.id <= 321 {
-                //иконка: дождь
-                icon = "rainy"
-            } else if weather.id >= 500 && weather.id <= 531 {
-                //иконка: дождь с солнцем
-                icon = "lighRain"
-            } else if weather.id >= 600 && weather.id <= 622 {
-                //иконка: снег
-                icon = "snow"
-            } else if weather.id >= 700 && weather.id <= 781 {
-                //иконка: туман
-                icon = "fog2"
-            } else if weather.id == 800 {
-                // иконка: ясное небо
-                icon = "sunny"
-            } else if weather.id == 801 {
-                // иконка: облако с солнцем
-                icon = "lightCloudy"
-            } else if weather.id >= 802 && weather.id <= 804 {
-                // иконка: облако
-                icon = "cloudy"
+            if let id = weather.id {
+                if id >= 200 && id <= 232 {
+                    //иконка: гроза
+                    icon = "lightning"
+                } else if id >= 300 && id <= 321 {
+                    //иконка: дождь
+                    icon = "rainy"
+                } else if id >= 500 && id <= 531 {
+                    //иконка: дождь с солнцем
+                    icon = "lighRain"
+                } else if id >= 600 && id <= 622 {
+                    //иконка: снег
+                    icon = "snow"
+                } else if id >= 700 && id <= 781 {
+                    //иконка: туман
+                    icon = "fog2"
+                } else if id == 800 {
+                    // иконка: ясное небо
+                    icon = "sunny"
+                } else if id == 801 {
+                    // иконка: облако с солнцем
+                    icon = "lightCloudy"
+                } else if id >= 802 && id <= 804 {
+                    // иконка: облако
+                    icon = "cloudy"
+                }
             }
         }
         return icon

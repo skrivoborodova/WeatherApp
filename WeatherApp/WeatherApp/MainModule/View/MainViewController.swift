@@ -224,7 +224,7 @@ class MainViewController: UIViewController {
 extension MainViewController: MainViewProtocol {
     func clearShowingData() {
         weatherTableView.reloadData()
-        self.weatherImageView.image = UIImage(named: "")
+        self.weatherImageView.image = UIImage()
         self.cityTitle.text = ""
         self.dateTitle.text = ""
         self.temp.text = ""

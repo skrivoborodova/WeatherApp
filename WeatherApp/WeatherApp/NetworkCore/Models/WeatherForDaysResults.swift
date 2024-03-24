@@ -8,29 +8,29 @@
 import Foundation
 
 struct WeatherForDaysResults: Responsable {
-    let cod: String
-    let message, cnt: Int
+    let cod: String?
+    let message, cnt: Int?
     let list: [List]
     let city: City
 }
 
 struct City: Codable {
-    let id: Int
-    let name: String
+    let id: Int?
+    let name: String?
     let coord: Coord
-    let country: String
-    let population, timezone, sunrise, sunset: Int
+    let country: String?
+    let population, timezone, sunrise, sunset: Int?
 }
 
 struct List: Codable {
-    let dt: Int
+    let dt: Int?
     let main: MainClass
     let weather: [Weather]
     let clouds: Clouds
     let wind: Wind
-    let visibility: Int
-    let pop: Double
-    let dtTxt: String
+    let visibility: Int?
+    let pop: Double?
+    let dtTxt: String?
 
     enum CodingKeys: String, CodingKey {
         case dt, main, weather, clouds, wind, visibility, pop
@@ -39,9 +39,9 @@ struct List: Codable {
 }
 
 struct MainClass: Codable {
-    let temp, feelsLike, tempMin, tempMax: Double
-    let pressure, seaLevel, grndLevel, humidity: Int
-    let tempKf: Double
+    let temp, feelsLike, tempMin, tempMax: Double?
+    let pressure, seaLevel, grndLevel, humidity: Int?
+    let tempKf: Double?
 
     enum CodingKeys: String, CodingKey {
         case temp
