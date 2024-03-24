@@ -7,24 +7,7 @@
 
 import Foundation
 import CoreLocation
-
-enum LocationServiceError: Error {
-    case authorizationDenied
-    case currentCoordinatesMissed
-}
-
-protocol MainViewProtocol: AnyObject {
-    func showWeather()
-    func showError(_ error: Error)
-}
-
-protocol MainViewPresenterProtocol: AnyObject {
-    init(view: MainViewProtocol, weatherService: WeatherServiceProtocol)
-    func requestWeather()
-    
-    var modelCurrentWeather: WeatherCurrent? { get }
-    var listWeatherForDays: [WeatherForDays]? { get }
-}
+import MapKit
 
 final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
     private let mainView: MainViewProtocol
@@ -33,7 +16,6 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
     private let locationManager: CLLocationManager
     private var currentCoordinates: CLLocation?
     
-    var modelCurrentWeather: WeatherCurrent?
     var listWeatherForDays: [WeatherForDays]?
     
     init(view: MainViewProtocol, weatherService: WeatherServiceProtocol) {
@@ -44,10 +26,39 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
         self.listWeatherForDays = []
     }
     
+    func seacrhWeather(_ text: String) {
+        listWeatherForDays?.removeAll()
+        mainViewClearShowingData()
+        let searchRequest = MKLocalSearch.Request()
+        searchRequest.naturalLanguageQuery = text
+        let search = MKLocalSearch(request: searchRequest)
+        
+        DispatchQueue.global().async {
+            search.start { [weak self] response, error in
+                guard let response = response else {
+                    self?.mainViewShowError(error ?? LocationServiceError.cantFindCityCoordinates)
+                    print("Error: \(error?.localizedDescription ?? "Unknown error")")
+                    return
+                }
+                
+                for item in response.mapItems {
+//                    print("coordinats: \(item.placemark.coordinate)")
+                    self?.requestWeather(latitude: item.placemark.coordinate.latitude, longitude: item.placemark.coordinate.longitude)
+                }
+            }
+        }
+    }
+    
     func requestWeather() {
+        if currentCoordinates != nil {
+            listWeatherForDays?.removeAll()
+            mainViewClearShowingData()
+            requestWeatherForLocation()
+            return
+        }
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()
-        if locationManager.authorizationStatus == .denied {
+        if locationManager.authorizationStatus == .denied || locationManager.authorizationStatus == .restricted {
             mainViewShowError(LocationServiceError.authorizationDenied)
         } else {
             locationManager.startUpdatingLocation()
@@ -61,9 +72,12 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
         }
         let latitude = currentCoordinates.coordinate.latitude
         let longitude = currentCoordinates.coordinate.longitude
+//        print ("\(latitude) | \(longitude)")
         
-        print ("\(latitude) | \(longitude)")
-        
+        requestWeather(latitude: latitude, longitude: longitude)
+    }
+    
+    private func requestWeather(latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
         weatherService.requestWeather(latitude: latitude, longitude: longitude) { [weak self] res, err in
             if let error = err {
                 self?.mainViewShowError(error)
@@ -71,7 +85,6 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
             }
             
             if let result = res {
-//                print(result)
                 let date = Date(timeIntervalSince1970: TimeInterval(result.dt))
                 let model = WeatherCurrent(date: date,
                                            temp: Int(round(result.main.temp)),
@@ -83,9 +96,8 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
                                            humidity: result.main.humidity,
                                            city: result.name,
                                            description: result.weather.first?.description ?? "",
-                                           icon: result.weather.first?.icon ?? "")
-                self?.modelCurrentWeather = model
-                self?.mainViewShowResults()
+                                           icon: self?.chooseIconForWeather(result.weather.first) ?? "")
+                self?.mainViewShowCurrentWeather(model)
             }
         }
         
@@ -107,22 +119,55 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
                     if Calendar.current.compare(date1, to: date2, toGranularity: .day) == .orderedAscending {
                         k = i + 6
                     } else if k == i {
-//                        print ("||| \(date1) |||")
+//                        print ("| \(date1) |")
                         let model = WeatherForDays(date: date1,
-                                                   temp: result.list[k].main.temp,
-                                                   feelsLike: result.list[k].main.feelsLike,
-                                                   tempMin: result.list[k].main.tempMin,
-                                                   tempMax: result.list[k].main.tempMax,
+                                                   temp: Int(round(result.list[k].main.temp)),
+                                                   feelsLike: Int(round(result.list[k].main.feelsLike)),
+                                                   tempMin: Int(round(result.list[k].main.tempMin)),
+                                                   tempMax: Int(round(result.list[k].main.tempMax)),
                                                    pressure: result.list[k].main.pressure,
                                                    humidity: result.list[k].main.humidity,
                                                    description: result.list[k].weather.first?.description ?? "",
-                                                   icon: result.list[k].weather.first?.icon ?? "")
+                                                   icon: "\(self?.chooseIconForWeather(result.list[k].weather.first) ?? "")Small")
                         self?.listWeatherForDays?.append(model)
                         self?.mainViewShowResults()
                     }
                 }
             }
         }
+    }
+    
+    private func chooseIconForWeather(_ weather: Weather?) -> String {
+        //https://openweathermap.org/weather-conditions
+        var icon = "lightCloudy"
+        if let weather = weather {
+            if weather.id >= 200 && weather.id <= 232 {
+                //иконка: гроза
+                icon = "lightning"
+            } else if weather.id >= 300 && weather.id <= 321 {
+                //иконка: дождь
+                icon = "rainy"
+            } else if weather.id >= 500 && weather.id <= 531 {
+                //иконка: дождь с солнцем
+                icon = "lighRain"
+            } else if weather.id >= 600 && weather.id <= 622 {
+                //иконка: снег
+                icon = "snow"
+            } else if weather.id >= 700 && weather.id <= 781 {
+                //иконка: туман
+                icon = "fog2"
+            } else if weather.id == 800 {
+                // иконка: ясное небо
+                icon = "sunny"
+            } else if weather.id == 801 {
+                // иконка: облако с солнцем
+                icon = "lightCloudy"
+            } else if weather.id >= 802 && weather.id <= 804 {
+                // иконка: облако
+                icon = "cloudy"
+            }
+        }
+        return icon
     }
     
     private func mainViewShowError(_ error: Error) {
@@ -136,6 +181,18 @@ final class MainViewPresenter: NSObject, MainViewPresenterProtocol {
             self?.mainView.showWeather()
         }
     }
+    
+    private func mainViewShowCurrentWeather(_ model: WeatherCurrent) {
+        DispatchQueue.main.async { [weak self] in
+            self?.mainView.showCurrentWeather(model)
+        }
+    }
+    
+    private func mainViewClearShowingData() {
+        DispatchQueue.main.async { [weak self] in
+            self?.mainView.clearShowingData()
+        }
+    }
 }
 
 //MARK: - CLLocationManagerDelegate
@@ -146,6 +203,12 @@ extension MainViewPresenter: CLLocationManagerDelegate {
             currentCoordinates = locations.first
             locationManager.stopUpdatingLocation()
             requestWeatherForLocation()
+        }
+    }
+    
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        if manager.authorizationStatus == .denied || manager.authorizationStatus == .restricted {
+            mainViewShowError(LocationServiceError.authorizationDenied)
         }
     }
 }

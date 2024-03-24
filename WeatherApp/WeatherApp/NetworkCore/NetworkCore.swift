@@ -10,11 +10,6 @@ import Foundation
 protocol Responsable: Decodable {
 }
 
-enum NetworkError: Error {
-    case invalidURL
-    case responseFailureStatusCode
-}
-
 protocol NetworkCoreProtocol {
     func request<Res: Responsable>(metadata: String, completion: @escaping (Result<Res, Error>) -> Void)
 }
@@ -33,7 +28,7 @@ extension NetworkCore: NetworkCoreProtocol {
     func request<Res: Responsable>(metadata: String, completion: @escaping (Result<Res, Error>) -> Void) {
         let urlRequest = URL(string: "\(urlString)\(metadata)&appid=\(key)")
         
-        print("\(urlString)\(metadata)&appid=\(key)")
+//        print("\(urlString)\(metadata)&appid=\(key)")
     
         guard let url = urlRequest else {
             completion(.failure(NetworkError.invalidURL))
